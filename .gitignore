@@ -2,3 +2,4 @@ scripts/*
 !scripts/_example.sh
 
 scripts.log
+main
