@@ -4,7 +4,7 @@ dev:
 build:
 	go build -o ./main main.go
 
-docker:
+docker-build:
 	docker run \
 		-w /app  \
 		-v $(shell pwd):/app  \
