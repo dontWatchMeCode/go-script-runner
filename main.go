@@ -18,10 +18,9 @@ func main() {
 		panic(err)
 	}
 
-	switch os.Args[1] {
-	case "-run":
+	if len(os.Args[1:]) != 0 && os.Args[1] == "-run" {
 		core.RunAllScript(pwd)
-	default:
+	} else {
 		signalChannel := make(chan os.Signal, 1)
 		signal.Notify(signalChannel, syscall.SIGINT, syscall.SIGTERM)
 
