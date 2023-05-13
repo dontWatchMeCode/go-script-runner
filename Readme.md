@@ -48,7 +48,26 @@ make docker-build
 
 currently only linux is supported
 
-### 3. Run the tool
+### 3. Set the environment variables
+
+```sh
+cp .env.example .env
+```
+
+change the values in the .env file to your own
+
+```sh
+DISCORD_WEBHOOK_URL="https://discord.com/api/web..."
+CRON_SCHEDULE="*/5 * * * *"
+```
+
+Webhooks can be created in the Discord settings under `Integrations` > `Webhooks` at a text channel.
+
+### 4. Add scripts to the scripts folder
+
+Any script in the `scripts` will be executed. All files starting with a `_` will be ignored. These files can be used to store helper functions or other code that is not meant to be executed.
+
+### 5. Run the tool
 
 ```sh
 ./main
