@@ -1,4 +1,5 @@
 #!/usr/bin/bash
+set -e
 
 # example for updating a python project running in a docker container
 # the script only prints to stdout if there are changes to pull from the repo
