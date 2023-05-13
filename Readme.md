@@ -72,3 +72,9 @@ Any script in the `scripts` will be executed. All files starting with a `_` will
 ```sh
 ./main
 ```
+
+you can also run the scripts withought starting the cron job
+
+```sh
+./main -run
+```
