@@ -1,7 +1,7 @@
 package main
 
 import (
-	"dontWatchMeCode/pipe/pkg/utils"
+	"dontWatchMeCode/pipe/pkg/core"
 	"fmt"
 	"os"
 	"os/signal"
@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	defer utils.HandlePanic()
+	defer core.HandlePanic()
 	godotenv.Load(".env")
 
 	signalChannel := make(chan os.Signal, 1)
@@ -22,7 +22,7 @@ func main() {
 		panic(err)
 	}
 
-	utils.StartCron(pwd)
+	core.StartCron(pwd)
 
 	fmt.Println("Press CTRL-C to exit")
 	<-signalChannel
