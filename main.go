@@ -1,6 +1,7 @@
 package main
 
 import (
+	"dontWatchMeCode/pipe/pkg/webhooks/discord"
 	"fmt"
 	"log"
 	"os"
@@ -14,14 +15,14 @@ func getFileReference(filePath string) *os.File {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		logFile, err := os.Create(filePath)
 		if err != nil {
-			log.Fatal(err)
+			panic(err)
 		}
 		defer logFile.Close()
 	}
 
 	fileReference, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	return fileReference
@@ -32,30 +33,85 @@ func logData(file *os.File, heading string, content string) {
 	fmt.Fprintf(file, "%s\n%s\n%s\n%s\n\n", splitString, heading, splitString, content)
 }
 
+func handlePanic() {
+	if r := recover(); r != nil {
+
+		embed := discord.Embed{
+			Title:       fmt.Sprintf("[ FATAL: %s ]", "Panic occurred"),
+			Description: fmt.Sprintf("%v", r),
+			Color:       discord.EmbedsColorRed,
+		}
+
+		discord.CallDiscordWebhook(discord.SendData{
+			Url: "https://discord.com/api/webhooks/xyz",
+			Message: discord.Message{
+				Content: "",
+				Embeds:  []discord.Embed{embed},
+			},
+		})
+
+		pwd, err := os.Getwd()
+		if err != nil {
+			panic(err)
+		}
+
+		logFile := getFileReference(filepath.Join(pwd, "scripts.log"))
+		defer logFile.Close()
+
+		logData(
+			logFile,
+			embed.Title,
+			embed.Description,
+		)
+
+		log.Printf("Panic occurred: %v", r)
+		os.Exit(1)
+	}
+}
+
 func runAllScript() {
+	var embeds []discord.Embed
+
+	defer func() {
+		discord.CallDiscordWebhook(discord.SendData{
+			Url: "https://discord.com/api/webhooks/xyz",
+			Message: discord.Message{
+				Content: "",
+				Embeds:  embeds,
+			},
+		})
+	}()
+
 	date := time.Now().Format("2006-01-02 15:04:05")
 	pwd, err := os.Getwd()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	logFile := getFileReference(filepath.Join(pwd, "scripts.log"))
 	defer logFile.Close()
 
 	if err := os.Chdir(filepath.Join(pwd, "scripts")); err != nil {
+		embeds = append(embeds, discord.Embed{
+			Title:       fmt.Sprintf("[ WARNING: %s / %s ]", "folder scripts", date),
+			Description: "folder scripts not found,\nplease create folder scripts",
+			Color:       discord.EmbedsColorYellow,
+		})
+
+		index := len(embeds) - 1
 
 		logData(
 			logFile,
-			fmt.Sprintf("[ FATAL: %s / %s ]", "folder scripts", date),
-			"folder scripts not found,\nplease create folder scripts",
+			embeds[index].Title,
+			embeds[index].Description,
 		)
 
-		log.Fatal(err)
+		panic(err)
 	}
 
 	files, err := os.ReadDir(".")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	for _, file := range files {
@@ -70,22 +126,39 @@ func runAllScript() {
 		out, err := cmd.Output()
 
 		if err != nil {
+			embeds = append(embeds, discord.Embed{
+				Title:       fmt.Sprintf("[ ERROR: %s / %s ]", file.Name(), date),
+				Description: strings.TrimSpace(string(err.Error())),
+				Color:       discord.EmbedsColorYellow,
+			})
+
+			index := len(embeds) - 1
+
 			logData(
 				logFile,
-				fmt.Sprintf("[ INFO: %s / %s ]", file.Name(), date),
-				strings.TrimSpace(string(err.Error())),
+				embeds[index].Title,
+				embeds[index].Description,
 			)
 			continue
 		}
 
+		embeds = append(embeds, discord.Embed{
+			Title:       fmt.Sprintf("[ INFO: %s / %s ]", file.Name(), date),
+			Description: strings.TrimSpace(string(out)),
+			Color:       discord.EmbedsColorGreen,
+		})
+
+		index := len(embeds) - 1
+
 		logData(
 			logFile,
-			fmt.Sprintf("[ ERROR: %s / %s ]", file.Name(), date),
-			strings.TrimSpace(string(out)),
+			embeds[index].Title,
+			embeds[index].Description,
 		)
 	}
 }
 
 func main() {
+	defer handlePanic()
 	runAllScript()
 }
