@@ -1,6 +1,7 @@
 package main
 
 import (
+	"dontWatchMeCode/pipe/pkg/utils"
 	"dontWatchMeCode/pipe/pkg/webhooks/discord"
 	"fmt"
 	"log"
@@ -9,6 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 func getFileReference(filePath string) *os.File {
@@ -35,15 +38,19 @@ func logData(file *os.File, heading string, content string) {
 
 func handlePanic() {
 	if r := recover(); r != nil {
-
 		embed := discord.Embed{
 			Title:       fmt.Sprintf("[ FATAL: %s ]", "Panic occurred"),
 			Description: fmt.Sprintf("%v", r),
 			Color:       discord.EmbedsColorRed,
 		}
 
+		discordWebhookUrl, error := utils.GetEnv("DISCORD_WEBHOOK_URL")
+		if error != nil {
+			panic(error)
+		}
+
 		discord.CallDiscordWebhook(discord.SendData{
-			Url: "https://discord.com/api/webhooks/xyz",
+			Url: discordWebhookUrl,
 			Message: discord.Message{
 				Content: "",
 				Embeds:  []discord.Embed{embed},
@@ -73,8 +80,13 @@ func runAllScript() {
 	var embeds []discord.Embed
 
 	defer func() {
+		discordWebhookUrl, error := utils.GetEnv("DISCORD_WEBHOOK_URL")
+		if error != nil {
+			panic(error)
+		}
+
 		discord.CallDiscordWebhook(discord.SendData{
-			Url: "https://discord.com/api/webhooks/xyz",
+			Url: discordWebhookUrl,
 			Message: discord.Message{
 				Content: "",
 				Embeds:  embeds,
@@ -159,6 +171,11 @@ func runAllScript() {
 }
 
 func main() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		panic(err)
+	}
+
 	defer handlePanic()
 	runAllScript()
 }
