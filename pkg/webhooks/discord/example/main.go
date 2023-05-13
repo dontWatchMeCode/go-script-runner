@@ -6,7 +6,6 @@ import (
 )
 
 func main() {
-
 	data := discord.SendData{
 		Url: "https://discord.com/api/webhooks/xyz123",
 		Message: discord.Message{
