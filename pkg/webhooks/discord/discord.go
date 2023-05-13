@@ -3,7 +3,7 @@ package discord
 import (
 	"bytes"
 	"encoding/json"
-	"log"
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -26,26 +26,31 @@ type Message struct {
 	Embeds  []Embed `json:"embeds,omitempty"`
 }
 
-func CallDiscordWebhook(webhookURL string, message Message) {
+type SendData struct {
+	Url     string
+	Message Message
+}
+
+func CallDiscordWebhook(data SendData) error {
 	payload := Message{
-		Content: message.Content,
-		Embeds:  message.Embeds,
+		Content: data.Message.Content,
+		Embeds:  data.Message.Embeds,
 	}
 
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		log.Fatal("Failed to marshal JSON payload:", err)
+		return err
 	}
 
-	resp, err := http.Post(webhookURL, "application/json", bytes.NewReader(payloadBytes))
+	resp, err := http.Post(data.Url, "application/json", bytes.NewReader(payloadBytes))
 	if err != nil {
-		log.Fatal("Failed to send HTTP request:", err)
+		return err
 	}
 	defer resp.Body.Close()
 
-	if !strings.HasPrefix(strconv.Itoa(resp.StatusCode), "2") {
-		log.Println("Unexpected response status:", resp.StatusCode)
-	} else {
-		log.Println("Discord webhook called successfully")
+	if strings.HasPrefix(strconv.Itoa(resp.StatusCode), "2") {
+		return nil
 	}
+
+	return errors.New("Webhook request failed status:" + strconv.Itoa(resp.StatusCode))
 }
