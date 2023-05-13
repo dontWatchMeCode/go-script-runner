@@ -43,7 +43,7 @@ make build
 you can also build the binary via a docker container
 
 ```sh
-make docker-build
+make build-docker
 ```
 
 currently only linux is supported

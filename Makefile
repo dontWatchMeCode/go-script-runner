@@ -1,7 +1,7 @@
 build:
 	go build -o ./main main.go
 
-docker-build:
+build-docker:
 	docker run \
 		-w /app  \
 		-v $(shell pwd):/app  \
