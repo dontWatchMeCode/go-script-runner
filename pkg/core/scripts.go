@@ -21,12 +21,19 @@ func RunAllScript(pwd string) {
 			panic(err)
 		}
 
+		var filteredEmbeds []discord.Embed
+		for _, embed := range embeds {
+			if embed.Description != "" {
+				filteredEmbeds = append(filteredEmbeds, embed)
+			}
+		}
+
 		fmt.Println("Sending discord webhook")
 		discord.CallDiscordWebhook(discord.SendData{
 			Url: discordWebhookUrl,
 			Message: discord.Message{
 				Content: "",
-				Embeds:  embeds,
+				Embeds:  filteredEmbeds,
 			},
 		})
 	}()
