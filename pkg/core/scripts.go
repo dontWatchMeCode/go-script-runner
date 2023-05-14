@@ -83,10 +83,15 @@ func RunAllScript(pwd string) {
 			})
 
 			index := len(embeds) - 1
+			title := embeds[index].Title
+			description := embeds[index].Description
+			if description == "" {
+				description = "no output"
+			}
 
 			LogData(
 				logFile,
-				embeds[index].Title,
+				title,
 				embeds[index].Description,
 			)
 			continue
@@ -99,11 +104,12 @@ func RunAllScript(pwd string) {
 		})
 
 		index := len(embeds) - 1
+		title := embeds[index].Title
+		description := embeds[index].Description
+		if description == "" {
+			description = "no output"
+		}
 
-		LogData(
-			logFile,
-			embeds[index].Title,
-			embeds[index].Description,
-		)
+		LogData(logFile, title, description)
 	}
 }
