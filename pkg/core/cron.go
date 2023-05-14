@@ -20,7 +20,7 @@ func StartCron(pwd string) {
 
 	c := cron.New()
 	c.AddFunc(cronSchedule, func() {
-		RunAllScript(pwd)
+		go RunAllScript(pwd)
 	})
 	c.Start()
 }
