@@ -73,12 +73,12 @@ func RunAllScript(pwd string) {
 			"bash", "-e",
 			filepath.Join(pwd, "scripts", file.Name()),
 		)
-		out, err := cmd.Output()
+		out, err := cmd.CombinedOutput()
 
 		if err != nil {
 			embeds = append(embeds, discord.Embed{
 				Title:       fmt.Sprintf("[ ERROR: %s / %s ]", file.Name(), date),
-				Description: strings.TrimSpace(string(err.Error())),
+				Description: strings.TrimSpace(string(out) + "\n" + err.Error()),
 				Color:       discord.EmbedsColorYellow,
 			})
 
