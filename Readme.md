@@ -34,7 +34,7 @@ To install and use the Go Script Runner, follow these steps:
 git clone https://github.com/dontWatchMeCode/pipe
 ```
 
-### 2. Build the project
+### 2. Build the project in linux
 
 ```sh
 make build
@@ -46,15 +46,13 @@ you can also build the binary via a docker container
 make build-docker
 ```
 
-currently only linux is supported
-
 ### 3. Set the environment variables
 
 ```sh
 cp .env.example .env
 ```
 
-change the values in the .env file to your own
+change the values in the .env file
 
 ```sh
 DISCORD_WEBHOOK_URL="https://discord.com/api/web..."
@@ -63,7 +61,7 @@ CRON_SCHEDULE="*/5 * * * *"
 
 Webhooks can be created in the Discord settings under `Integrations` > `Webhooks` at a text channel.
 
-### 4. Add scripts to the scripts folder
+### 4. Add scripts to the `scripts` folder
 
 Any script in the `scripts` will be executed. All files starting with a `_` will be ignored. These files can be used to store helper functions or other code that is not meant to be executed.
 
@@ -77,4 +75,37 @@ you can also run the scripts withought starting the cron job
 
 ```sh
 ./main -run
+```
+
+## Configuration for systemd
+
+### 1 Create a .service file
+
+`~/.config/systemd/user/go_script_runner.service`
+
+```sh
+[Unit]
+Description=Go Script Runner
+
+[Service]
+ExecStart=/path/to/your/go/executable
+WorkingDirectory=/path/to/your/go/executable/directory
+Restart=always
+
+[Install]
+WantedBy=default.target
+```
+
+### 2 Restart the daemon
+
+```bash
+systemctl --user daemon-reload
+```
+
+### 3 Enable and start the service
+
+```bash
+systemctl --user enable go_script_runner.service
+systemctl --user start go_script_runner.service
+systemctl --user status go_script_runner.service
 ```
